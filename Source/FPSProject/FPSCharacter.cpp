@@ -9,6 +9,35 @@ AFPSCharacter::AFPSCharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	// 创建第一人称摄像机组件。
+	FPSCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
+	check(FPSCameraComponent != nullptr);
+
+	// 将摄像机组件附加到我们的胶囊体组件。
+	FPSCameraComponent->SetupAttachment(CastChecked<USceneComponent, UCapsuleComponent>(GetCapsuleComponent()));
+
+	// 将摄像机置于略高于眼睛上方的位置。
+	FPSCameraComponent->SetRelativeLocation(FVector(0.0f, 0.0f, 50.0f + BaseEyeHeight));
+
+	// 启用Pawn控制摄像机旋转。
+	FPSCameraComponent->bUsePawnControlRotation = true;
+
+	// 为所属玩家创建第一人称网格体组件。
+	FPSMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FirstPersonMesh"));
+	check(FPSMesh != nullptr);
+
+	// 仅所属玩家可以看见此网格体。
+	FPSMesh->SetOnlyOwnerSee(true);
+
+	// 将 FPS 网格体附加到 FPS 摄像机。
+	FPSMesh->SetupAttachment(FPSCameraComponent);
+
+	// 禁用某些环境阴影以便实现只有单个网格体的感觉。
+	FPSMesh->bCastDynamicShadow = false;
+	FPSMesh->CastShadow = false;
+
+	// 所属玩家看不到常规（第三人称）全身网格体。
+	GetMesh()->SetOwnerNoSee(true);
 }
 
 // Called when the game starts or when spawned
